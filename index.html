@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <section class="container">
+      <form id="my-form">
+        <h1>Candy Shop</h1>
+        <div class="msg"></div>
+        <div>
+          <label for="name">Candy Name:</label>
+          <input type="text" id="name" />
+        </div>
+        <div>
+          <label for="description">Description</label>
+          <input type="text" id="description" />
+        </div>
+        <div>
+          <label for="price">Price</label>
+          <input type="number" id="price" />
+        </div>
+        <div>
+          <label for="quantity">Quantity</label>
+          <input type="number" id="quantity" />
+        </div>
+        <input id="btn" type="submit" value="Submit" />
+      </form>
+      <ul id="users"></ul>
+    </section>
+  </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script defer>
+    const myForm = document.querySelector("#my-form");
+    const name = document.querySelector("#name");
+    const description = document.querySelector("#description");
+    const price = document.querySelector("#price");
+    const quantity = document.querySelector("#quantity");
+    const userList = document.querySelector("#users");
+
+    myForm.addEventListener("submit", submitData);
+
+    //delete
+    function remove(userId) {
+      axios
+        .delete(
+          `https://crudcrud.com/api/063fe8a3debf4f9c900c1a96debdeb5f/CandyInformation/${userId}`
+        )
+        .then(() => {
+          if (userId) {
+            userList.remove(userId);
+            window.location.reload();
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+
+    function Add1(userId) {
+      axios
+        .get(
+          `https://crudcrud.com/api/063fe8a3debf4f9c900c1a96debdeb5f/CandyInformation/${userId}`
+        )
+        .then((response) => {
+          const user = response.data;
+          let myObj = {
+            name: user.name,
+            description: user.description,
+            price: user.price,
+            quantity: user.quantity - 1,
+          };
+
+          axios
+            .post(
+              "https://crudcrud.com/api/063fe8a3debf4f9c900c1a96debdeb5f/CandyInformation",
+              myObj
+            )
+            .then((response) => {
+              console.log(response);
+              // window.location.reload();
+            //   showOnScreen(response.data);
+              remove(user._id)
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        })
+        .catch((err) => console.log(err));
+    }
+
+    function showOnScreen(user) {
+      const childHTML = `
+        <li id=${user._id}>
+            Candy Name: ${user.name}<br>
+            Description: ${user.description}
+            Price: ${user.price}
+            Quantity: ${user.quantity}
+            <button onclick="remove('${user._id}')">DELETE</button>
+            <button onclick="Add1('${user._id}')">Add 1</button>
+        </li>
+    `;
+      userList.innerHTML += childHTML;
+    }
+
+    // when window is reloaded
+    window.addEventListener("DOMContentLoaded", () => {
+      axios
+        .get(
+          "https://crudcrud.com/api/063fe8a3debf4f9c900c1a96debdeb5f/CandyInformation"
+        )
+        .then((response) => {
+          console.log(response);
+          response.data.forEach((user) => showOnScreen(user));
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    });
+
+    function submitData(e) {
+      e.preventDefault();
+      if (
+        name.value === "" ||
+        description.value === "" ||
+        price.value === "" ||
+        quantity.value === ""
+      ) {
+        alert("Enter the details");
+      } else {
+        let myObj = {
+          name: name.value,
+          description: description.value,
+          price: price.value,
+          quantity: quantity.value,
+        };
+
+        axios
+          .post(
+            "https://crudcrud.com/api/063fe8a3debf4f9c900c1a96debdeb5f/CandyInformation",
+            myObj
+          )
+          .then((response) => {
+            console.log(response);
+            // window.location.reload();
+            showOnScreen(response.data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    }
+  </script>
+</html>
